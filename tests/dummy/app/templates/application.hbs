@@ -15,4 +15,10 @@
   optionLabelPath="body"
   multiple=true}}
 
+<h2>Comments</h2>
+
+{{#each model.newPost.comments as |comment|}}
+  <p>{{comment.body}}</p>
+{{/each}}
+
 {{outlet}}

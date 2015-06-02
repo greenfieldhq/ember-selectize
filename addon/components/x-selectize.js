@@ -76,7 +76,6 @@ export default Ember.Component.extend({
     const value = get(this, '_value');
     const selection = get(this, '_selection');
     const valuePath = get(this, '_valuePath');
-    const multiple = get(this, 'multiple');
 
     if (value) {
       if (valuePath) {

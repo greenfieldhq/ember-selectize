@@ -6,16 +6,6 @@ const postAttrs = [
   { id: "3", title: "The worst post ever written" }
 ];
 
-const commentAttrs = [
-  { id: "1", body: "The best comment ever" },
-  { id: "2", body: "The next best comment" },
-  { id: "3", body: "The worst comment ever written" },
-  { id: "4", body: "comment 4" },
-  { id: "5", body: "comment 5" },
-  { id: "6", body: "comment 6" },
-  { id: "7", body: "comment 7" }
-];
-
 export default Ember.Route.extend({
   beforeModel() {
     this._buildPosts();
@@ -38,8 +28,17 @@ export default Ember.Route.extend({
   },
 
   _buildComments() {
-    return commentAttrs.map((attrs) => {
-      return this.store.createRecord('comment', attrs);
-    });
+    const comments = [];
+
+    for (let i = 0; i < 300; i ++) {
+     const comment = this.store.createRecord('comment', {
+        id: i.toString(),
+        body: `Awesome comment #${i}`
+      });
+
+      comments.push(comment);
+    }
+
+    return comments;
   }
 });
