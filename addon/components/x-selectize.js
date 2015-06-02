@@ -4,13 +4,26 @@ import layout from '../templates/components/x-selectize';
 const computed = Ember.computed;
 const get = Ember.get;
 const isEmpty = Ember.isEmpty;
+const on = Ember.on;
+const set = Ember.set;
+const run = Ember.run;
 
 export default Ember.Component.extend({
+  tagName: 'select',
   layout: layout,
 
   content: null,
   optionLabelPath: 'content',
   optionValuePath: 'content',
+  _selectize: null,
+
+  _initSelectize: on('didInsertElement', function() {
+    this.$().selectize();
+
+    const selectize = this.$()[0].selectize;
+
+    run(() => set(this, '_selectize', selectize));
+  }),
 
   _options: computed('content.[]', function() {
     const content = get(this, 'content');

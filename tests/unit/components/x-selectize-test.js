@@ -24,6 +24,17 @@ test('it renders', function(assert) {
   assert.equal(component._state, 'inDOM');
 });
 
+test('selectize instance is created when rendered', function(assert) {
+  assert.expect(1);
+
+  const component = this.subject();
+
+  this.render();
+
+  const selectize = get(component, '_selectize');
+  assert.equal(selectize.isSetup, true, 'selectize is setup');
+});
+
 // options
 
 test('options when content is an array of strings', function(assert) {
