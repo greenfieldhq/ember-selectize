@@ -23,6 +23,14 @@ const findSelectedItem = function($el, value) {
   return $item;
 };
 
+const hasSelectedItem = function($el, value) {
+  return findSelectedItem($el, value).length > 0;
+};
+
+const hasSelectedItems = function($el, values) {
+  return Ember.A(values).every((value) => hasSelectedItem($el, value));
+};
+
 const removeSelectedItem = function($el, value) {
   const $item = findSelectedItem($el, value);
   $item.find('.remove').click();
@@ -40,10 +48,10 @@ test('options when content is an array of strings', function(assert) {
   assert.expect(4);
 
   this.render(hbs`
-    {{x-selectize content=content}}
+    {{x-selectize content=people value=person}}
   `);
 
-  this.set('content', ['Eric', 'Dave', 'Wizard']);
+  this.set('people', ['Eric', 'Dave', 'Wizard']);
 
   const $dropDownContent = this.$().find('.selectize-dropdown-content');
 
@@ -57,10 +65,10 @@ test('options when content is an array of objects', function(assert) {
   assert.expect(4);
 
   this.render(hbs`
-    {{x-selectize content=content optionLabelPath="name" optionValuePath="id"}}
+    {{x-selectize content=people value=person optionLabelPath="name" optionValuePath="id"}}
   `);
 
-  this.set('content', [
+  this.set('people', [
     { id: '1', name: 'Eric' },
     { id: '2', name: 'Dave' },
     { id: '3', name: 'Wizard' },
@@ -77,7 +85,7 @@ test('options when content is an array of objects', function(assert) {
 // when multiple false
 
 test('changing a value when content is array of strings', function(assert) {
-  assert.expect(4);
+  assert.expect(5);
 
   this.render(hbs`
     {{x-selectize value=person content=content}}
@@ -85,10 +93,13 @@ test('changing a value when content is array of strings', function(assert) {
 
   this.set('content', ['Eric', 'Dave', 'Wizard']);
 
-  findOptionByValue(this.$(), 'Eric').click();
+  this.set('person', 'Wizard');
 
   let $selectedItems = findSelectedItems(this.$());
   assert.equal($selectedItems.length, 1, 'correct number of selected items');
+  assert.equal(hasSelectedItem(this.$(), 'Wizard'), true, 'has correct initial value');
+
+  findOptionByValue(this.$(), 'Eric').click();
 
   let selectedPerson = get(this, 'person');
   assert.deepEqual(selectedPerson, 'Eric', 'eric is selected');
@@ -103,17 +114,20 @@ test('changing a value when content is array of strings', function(assert) {
 });
 
 test('changing a value when content is array of objects', function(assert) {
-  assert.expect(4);
+  assert.expect(5);
 
   this.render(hbs`
-    {{x-selectize value=person content=content optionLabelPath="name" optionValuePath="id"}}
+    {{x-selectize value=person content=people optionLabelPath="name" optionValuePath="id"}}
   `);
 
   const eric = { id: '1', name: 'Eric' };
   const dave = { id: '2', name: 'Dave' };
   const wizard = { id: '3', name: 'Wizard' };
 
-  this.set('content', [eric, dave, wizard]);
+  this.set('people', [eric, dave, wizard]);
+  this.set('person', '3');
+
+  assert.equal(hasSelectedItem(this.$(), '3'), true, 'has correct initial value');
 
   findOptionByValue(this.$(), '1').click();
 
@@ -133,17 +147,20 @@ test('changing a value when content is array of objects', function(assert) {
 });
 
 test('changing a selection when content is array of objects', function(assert) {
-  assert.expect(4);
+  assert.expect(5);
 
   this.render(hbs`
-    {{x-selectize selection=person content=content optionLabelPath="name" optionValuePath="id"}}
+    {{x-selectize selection=person content=people optionLabelPath="name" optionValuePath="id"}}
   `);
 
   const eric = { id: '1', name: 'Eric' };
   const dave = { id: '2', name: 'Dave' };
   const wizard = { id: '3', name: 'Wizard' };
 
-  this.set('content', [eric, dave, wizard]);
+  this.set('people', [eric, dave, wizard]);
+  this.set('person', wizard);
+
+  assert.equal(hasSelectedItem(this.$(), '3'), true, 'has correct initial selection');
 
   findOptionByValue(this.$(), '1').click();
 
@@ -165,103 +182,105 @@ test('changing a selection when content is array of objects', function(assert) {
 // when multiple true
 
 test('multiple - changing a value when content is array of strings', function(assert) {
-  assert.expect(5);
+  assert.expect(7);
 
   this.render(hbs`
-    {{x-selectize value=people content=content multiple=true}}
+    {{x-selectize value=selectedPeople content=people multiple=true}}
   `);
 
-  this.set('content', ['Eric', 'Dave', 'Wizard']);
+  this.set('people', ['Eric', 'Dave', 'Wizard']);
+  this.set('selectedPeople', ['Eric']);
 
-  findOptionByValue(this.$(), 'Eric').click();
-
-  let $selectedItems = findSelectedItems(this.$());
-  assert.equal($selectedItems.length, 1, 'correct number of selected items');
-
-  let people = get(this, 'people');
-  assert.deepEqual(people, ['Eric']);
+  assert.equal(hasSelectedItems(this.$(), ['Eric']), true,
+    'has correct initial selection');
 
   findOptionByValue(this.$(), 'Dave').click();
 
-  $selectedItems = findSelectedItems(this.$());
-  assert.equal($selectedItems.length, 2, 'correct number of selected items');
+  assert.equal(hasSelectedItems(this.$(), ['Eric', 'Dave']), true,
+    'item added to selectize items');
 
-  people = get(this, 'people');
-  assert.deepEqual(people, ['Eric', 'Dave']);
+  let selectedPeople = get(this, 'selectedPeople');
+  assert.deepEqual(selectedPeople, ['Eric', 'Dave'], 'item added to selection');
 
-  removeSelectedItem(this.$(), 'Eric');
+  findOptionByValue(this.$(), 'Wizard').click();
 
-  people = get(this, 'people');
-  assert.deepEqual(people, ['Dave'], 'option removed successfully');
+  assert.equal(hasSelectedItems(this.$(), ['Eric', 'Dave', 'Wizard']), true,
+    'adds item to selection correctly');
+
+  let $selectedItems = findSelectedItems(this.$());
+  assert.equal($selectedItems.length, 3, 'correct number of selected items');
+
+  selectedPeople = get(this, 'selectedPeople');
+  assert.deepEqual(selectedPeople, ['Eric', 'Dave', 'Wizard']);
+
+  removeSelectedItem(this.$(), 'Dave');
+
+  selectedPeople = get(this, 'selectedPeople');
+  assert.deepEqual(selectedPeople, ['Eric', 'Wizard'], 'option removed successfully');
 });
 
 test('multiple - changing a value when content is array of objects', function(assert) {
   assert.expect(5);
 
   this.render(hbs`
-    {{x-selectize value=people content=content optionLabelPath="name" optionValuePath="id" multiple=true}}
+    {{x-selectize value=selectedPeople content=people optionLabelPath="name" optionValuePath="id" multiple=true}}
   `);
 
   const eric = { id: '1', name: 'Eric' };
   const dave = { id: '2', name: 'Dave' };
   const wizard = { id: '3', name: 'Wizard' };
 
-  this.set('content', [eric, dave, wizard]);
+  this.set('people', [eric, dave, wizard]);
+  this.set('selectedPeople', [eric]);
 
-  findOptionByValue(this.$(), '1').click();
-
-  let $selectedItems = findSelectedItems(this.$());
-  assert.equal($selectedItems.length, 1, 'correct number of selected items');
-
-  let people = get(this, 'people');
-  assert.deepEqual(people, ['1'], 'eric selected');
+  assert.equal(hasSelectedItems(this.$(), ['1']), true,
+    'has correct initial selectize items');
 
   findOptionByValue(this.$(), '2').click();
 
-  $selectedItems = findSelectedItems(this.$());
+  let $selectedItems = findSelectedItems(this.$());
   assert.equal($selectedItems.length, 2, 'correct number of selected items');
 
-  people = get(this, 'people');
-  assert.deepEqual(people, ['1', '2'], 'eric and dave selected');
+  assert.equal(hasSelectedItems(this.$(), ['1', '2']), true,
+    'has correct initial selectize items');
+
+  let selectedPeople = get(this, 'selectedPeople');
+  assert.deepEqual(selectedPeople, ['1', '2'], 'eric and dave selected');
 
   removeSelectedItem(this.$(), '1');
 
-  people = get(this, 'people');
-  assert.deepEqual(people, ['2'], 'option removed successfully');
+  selectedPeople = get(this, 'selectedPeople');
+  assert.deepEqual(selectedPeople, ['2'], 'option removed successfully');
 });
 
 test('multiple - changing a selection when content is array of objects', function(assert) {
-  assert.expect(5);
+  assert.expect(4);
 
   this.render(hbs`
-    {{x-selectize selection=people content=content optionLabelPath="name" optionValuePath="id" multiple=true}}
+    {{x-selectize selection=selectedPeople content=people optionLabelPath="name" optionValuePath="id" multiple=true}}
   `);
 
   const eric = { id: '1', name: 'Eric' };
   const dave = { id: '2', name: 'Dave' };
   const wizard = { id: '3', name: 'Wizard' };
 
-  this.set('content', [eric, dave, wizard]);
+  this.set('people', [eric, dave, wizard]);
+  this.set('selectedPeople', [eric]);
 
-  findOptionByValue(this.$(), '1').click();
-
-  let $selectedItems = findSelectedItems(this.$());
-  assert.equal($selectedItems.length, 1, 'correct number of selected items');
-
-  let selectedPeople = get(this, 'people');
-  assert.deepEqual(selectedPeople, [eric], 'eric selected');
+  assert.equal(hasSelectedItems(this.$(), ['1']), true,
+    'has correct initial selectize items');
 
   findOptionByValue(this.$(), '2').click();
 
-  $selectedItems = findSelectedItems(this.$());
+  let $selectedItems = findSelectedItems(this.$());
   assert.equal($selectedItems.length, 2, 'correct number of selected items');
 
-  selectedPeople = get(this, 'people');
+  let selectedPeople = get(this, 'selectedPeople');
   assert.deepEqual(selectedPeople, [eric, dave], 'eric and dave selected');
 
   removeSelectedItem(this.$(), '1');
 
-  selectedPeople = get(this, 'people');
+  selectedPeople = get(this, 'selectedPeople');
   assert.deepEqual(selectedPeople, [dave], 'option removed successfully');
 });
 

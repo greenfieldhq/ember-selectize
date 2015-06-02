@@ -3,6 +3,7 @@ import layout from '../templates/components/x-selectize';
 
 const computed = Ember.computed;
 const get = Ember.get;
+const isArray = Ember.isArray;
 const isEmpty = Ember.isEmpty;
 const on = Ember.on;
 const run = Ember.run;
@@ -14,24 +15,36 @@ export default Ember.Component.extend({
   layout: layout,
 
   content: null,
-  optionLabelPath: 'content.label',
-  optionValuePath: 'content.value',
+  optionLabelPath: 'content',
+  optionValuePath: 'content',
   multiple: false,
   _selectize: null,
   _options: [],
+  _value: null,
 
   didReceiveAttrs(attrs) {
     const content = attrs.newAttrs.content.value;
+    const value = attrs.newAttrs.value;
+    const selection = attrs.newAttrs.selection;
 
     if (content) {
       const options = this._buildOptions(content);
       set(this, '_options', options);
+    }
+
+    if (value) {
+      set(this, '_value', value.value);
+    }
+
+    if (selection) {
+      set(this, '_selection', selection.value);
     }
   },
 
   didRender() {
     this._initSelectize();
     this._updateSelectizeOptions();
+    this._updateSelectizeItems();
   },
 
   _initSelectize() {
@@ -42,14 +55,6 @@ export default Ember.Component.extend({
     set(this, '_selectize', selectize);
   },
 
-  _updateSelectizeOptions() {
-    if (this._selectize) {
-      const options = get(this, '_options');
-      this._selectize.addOption(options);
-      this._selectize.refreshOptions(false);
-    }
-  },
-
   _teardownSelectize: on('willDestroyElement', function() {
     const selectize = get(this, '_selectize');
 
@@ -57,6 +62,46 @@ export default Ember.Component.extend({
 
     set(this, '_selectize', null);
   }),
+
+  _updateSelectizeOptions() {
+    if (this._selectize) {
+      const options = get(this, '_options');
+
+      this._selectize.addOption(options);
+      this._selectize.refreshOptions(false);
+    }
+  },
+
+  _updateSelectizeItems() {
+    const value = get(this, '_value');
+    const selection = get(this, '_selection');
+    const valuePath = get(this, '_valuePath');
+    const multiple = get(this, 'multiple');
+
+    if (value) {
+      if (valuePath) {
+        if (isArray(value)) {
+          value.forEach((obj) => {
+            this._selectize.addItem(get(obj, valuePath));
+          });
+        } else {
+          this._selectize.addItem(value);
+        }
+      } else {
+        this._selectize.addItem(value);
+      }
+    }
+
+    if (selection) {
+      if (isArray(selection)) {
+        selection.forEach((obj) => {
+          this._selectize.addItem(get(obj, valuePath));
+        });
+      } else {
+        this._selectize.addItem(get(selection, valuePath));
+      }
+    }
+  },
 
   _settingsForSelectize() {
     return {
