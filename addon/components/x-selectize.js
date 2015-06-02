@@ -18,28 +18,37 @@ export default Ember.Component.extend({
   optionValuePath: 'content.value',
   multiple: false,
   _selectize: null,
+  _options: [],
 
-  didInitAttrs(attrs) {
-    const content = this.attrs.content.value;
-    this.set('options', this._buildOptions(content));
-  },
+  didReceiveAttrs(attrs) {
+    const content = attrs.newAttrs.content.value;
 
-  didRender() {
-    if (this._selectize) {
-      const options = get(this, 'options');
-      this._selectize.addOption(options);
-      this._selectize.refreshOptions();
+    if (content) {
+      const options = this._buildOptions(content);
+      run(() => set(this, '_options', options));
     }
   },
 
-  _initSelectize: on('didInsertElement', function() {
-    const options = this._optionsForSelectize();
-    this.$().selectize(options);
+  didRender() {
+    this._initSelectize();
+    this._updateSelectizeOptions();
+  },
 
+  _initSelectize() {
+    const settings = this._settingsForSelectize();
+    this.$().selectize(settings);
     const selectize = this.$()[0].selectize;
 
     run(() => set(this, '_selectize', selectize));
-  }),
+  },
+
+  _updateSelectizeOptions() {
+    if (this._selectize) {
+      const options = get(this, '_options');
+      this._selectize.addOption(options);
+      this._selectize.refreshOptions(false);
+    }
+  },
 
   _teardownSelectize: on('willDestroyElement', function() {
     const selectize = get(this, '_selectize');
@@ -49,7 +58,7 @@ export default Ember.Component.extend({
     run(() => set(this, '_selectize', null));
   }),
 
-  _optionsForSelectize() {
+  _settingsForSelectize() {
     return {
       plugins: ['remove_button'],
       labelField: 'label',
