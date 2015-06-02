@@ -25,7 +25,7 @@ export default Ember.Component.extend({
 
     if (content) {
       const options = this._buildOptions(content);
-      run(() => set(this, '_options', options));
+      set(this, '_options', options);
     }
   },
 
@@ -39,7 +39,7 @@ export default Ember.Component.extend({
     this.$().selectize(settings);
     const selectize = this.$()[0].selectize;
 
-    run(() => set(this, '_selectize', selectize));
+    set(this, '_selectize', selectize);
   },
 
   _updateSelectizeOptions() {
@@ -55,7 +55,7 @@ export default Ember.Component.extend({
 
     selectize.destroy();
 
-    run(() => set(this, '_selectize', null));
+    set(this, '_selectize', null);
   }),
 
   _settingsForSelectize() {
