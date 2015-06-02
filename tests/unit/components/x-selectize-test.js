@@ -7,9 +7,9 @@ const get = Ember.get;
 const set = Ember.set;
 const run = Ember.run;
 
-const hasOption = function($element, label, value) {
+const hasOption = function($el, label, value) {
   const selector = `[data-value="${value}"]:contains("${label}")`;
-  return $element.find(selector).length > 0;
+  return $el.find(selector).length > 0;
 };
 
 const findSelectedItems = function($el) {
@@ -33,8 +33,6 @@ const findOptionByValue = function($el, value) {
 };
 
 moduleForComponent('x-selectize', 'Integration | Component | x selectize', {
-  // Specify the other units that are required for this test
-  // needs: ['component:foo', 'helper:bar'],
   integration: true
 });
 
@@ -268,21 +266,7 @@ test('multiple - changing a selection when content is array of objects', functio
 });
 
 moduleForComponent('x-selectize', 'Unit | Component | x selectize', {
-  // Specify the other units that are required for this test
-  // needs: ['component:foo', 'helper:bar'],
   unit: true
-});
-
-test('it renders', function(assert) {
-  assert.expect(2);
-
-  // Creates the component instance
-  var component = this.subject();
-  assert.equal(component._state, 'preRender');
-
-  // Renders the component to the page
-  this.render();
-  assert.equal(component._state, 'inDOM');
 });
 
 test('selectize instance is created when rendered', function(assert) {
