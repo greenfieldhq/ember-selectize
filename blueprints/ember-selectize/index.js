@@ -1,5 +1,5 @@
 module.exports = {
-  description: ''
+  description: '',
 
   afterInstall(options) {
     return this.addBowerPackageToProject('selectize');

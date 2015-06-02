@@ -1,3 +1,18 @@
 <h2 id="title">Welcome to Ember.js</h2>
 
+{{#each model.posts as |post|}}
+  <p>{{post.title}}</p>
+{{/each}}
+
+{{x-selectize selection=model.newComment.post
+  content=model.posts
+  optionValuePath="id"
+  optionLabelPath="title"}}
+
+{{x-selectize selection=model.newPost.comments
+  content=model.comments
+  optionValuePath="id"
+  optionLabelPath="body"
+  multiple=true}}
+
 {{outlet}}
