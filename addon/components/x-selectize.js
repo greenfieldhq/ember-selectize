@@ -25,6 +25,14 @@ export default Ember.Component.extend({
     run(() => set(this, '_selectize', selectize));
   }),
 
+  _teardownSelectize: on('willDestroyElement', function() {
+    const selectize = get(this, '_selectize');
+
+    selectize.destroy();
+
+    run(() => set(this, '_selectize', null));
+  }),
+
   _options: computed('content.[]', function() {
     const content = get(this, 'content');
 
